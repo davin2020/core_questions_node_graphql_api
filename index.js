@@ -3,6 +3,7 @@ var express = require('express');
 var { graphqlHTTP } = require('express-graphql');
 var { buildSchema } = require('graphql');
 
+//VERY IMPORTANT !
 const mysql = require('promise-mysql');
 
 //may not be needed?
@@ -16,6 +17,8 @@ var questionSchema = buildSchema(`
   type Query {
     "Fetch a list of all questions"
     questions: [CoreQuestion]
+    "Fetch a list of all possible questions"
+    getAllQs: [CoreQuestion]
     "Fetch a single CoreQuestion by ID"
     question(q_id: Int!): CoreQuestion
     "Fetch a single CoreQuestion by ID and see Info"
@@ -80,13 +83,14 @@ const queryDB = (req, sql, args) => new Promise((resolve, reject) => {
     //why is it null ?? how to make it not null and add it to request object??
     // req.mysqlDB
 
-    // req.mysqlDb.query(sql, args, (err, rows) => {
-    //     if (err) {
-    //         return reject(err);
-    //     }
-    //     console.log('next line')
-    //     rows.changedRows || rows.affectedRows || rows.insertId ? resolve(true) : resolve(rows);
-    // });
+    // [11jan22 uncommented this section]
+    req.mysqlDb.query(sql, args, (err, rows) => {
+        if (err) {
+            return reject(err);
+        }
+        console.log('next line')
+        rows.changedRows || rows.affectedRows || rows.insertId ? resolve(true) : resolve(rows);
+    });
 
     console.log('seomthing else')
 }); //eo promise above
@@ -142,6 +146,49 @@ var getQuestionInfo55 = async (args, req, res) => {
     // return temp;
 }
 
+// [NEW FUNCTION 11JAN22 ]
+var getAllQuestions77 = async (args, req, res) => {
+
+    const connection77 = await mysql.createConnection({
+        host: '127.0.0.1',
+        user: 'root',
+        password: 'password',
+        database: 'corelifedb'
+    }); 
+
+    //this is still wehre the issue is
+    // let tempResults = await connection55.query(
+    //         queryGetQuestionsByID, [args.q_id], (err, results, fields) => {
+ 
+    // return await connection55.query(
+    //         queryGetQuestionsByID, [args.q_id], function (err, results, fields) {
+    //                 console.log('DORY line 297...');
+    //                 console.log(results)
+    //             });
+
+    let tempResults = await connection77.query(
+            queryGetBasicQuestions22);
+
+    connection77.end();
+    console.log('outside of tempResults connection77::: ')
+    // console.log(tempResults['_results']);
+    console.log(tempResults); //'data' is undefined, so it [0]
+    console.log(tempResults._results);
+    // console.log('   VALUES   ')
+    //  console.log(tempResults.sql);
+    // console.log(tempResults.values);
+
+    let temp = tempResults[0];
+    console.log(tempResults[0]);
+
+    // callback(null, results);    
+    // return tempResults[0];
+    // return temp;
+    // [11jan22 new, reutrning tempResuts works instead of returning tempResults[1]] -  if u return index 1 instead of whole thing u get GQL error -  "message": "Expected Iterable, but did not find one for field \"Query.getAllQs\".",
+    return tempResults;
+}
+
+
 // [orig line 476]
 //m29march Dav -  this is now working ok!
 // orange keywords id and topic probably have to match the schema above!
@@ -161,12 +208,23 @@ var updateQuestionVar = ({q_id, question}) => {
     return result;
 }
 
+// [11jan22 moved ths line above const questionRoot]
+// from connect.js
+let queryGetBasicQuestions22 = `
+    SELECT q_id, question, gp_order, points_type 
+    FROM ref_core_questions
+    `
+
 // The root provides a resolver function for each API endpoint
 //these keywords on left of : are like the endpoint and MUST correspond with the keywords within the const/var schema on line 6 'var schema = buildSchema', while on the right are the variables which contain the results/callbacks of functions eg 'var getCourse' on line 91 etc
 // Dav root for Questions
+// [11jan22 this is whats being used]
 const questionRoot = {
     question: getQuestion,
     questions: getQuestions,
+    // getAllQs: queryGetBasicQuestions22,
+    getAllQs: getAllQuestions77,
+    // getAllQs: (args, req) => queryDB(req, queryGetBasicQuestions22).then(data => data),
     // updateQuestion: updateQuestionLabel
     updateQuestion: updateQuestionVar,
     getQuestionInfo: getQuestionInfo55
@@ -177,11 +235,7 @@ const questionRoot = {
 // console.log('output of getLearners: ')
 // console.log(getLearners)
 
-// from connect.js
-let queryGetBasicQuestions = `
-    SELECT q_id, question, gp_order, points_type 
-    FROM ref_core_questions
-    `
+
 
 // var rootDB = {
 //   hello: () => "World"
@@ -193,10 +247,14 @@ SELECT q_id, question, gp_order, points_type from ref_core_questions WHERE q_id 
 // new db stuff - using promises and then, instead of async/await
 // green keywords neesd to be in schema i want to query!
 //none of these queries are actually workign! t30march - plus this isnt usings async/await
+//[11jan22 do i need 2 lots of queryDB -  is this rootDB even being used?? ]
 var rootDB = {
   questions: (args, req) => queryDB(req, queryGetBasicQuestions).then(data => data),
+  getAllQs: (args, req) => queryDB(req, queryGetBasicQuestions22).then(data => data),
   getQuestionInfo: (args, req) => queryDB(req, queryGetQuestionsByID, [args.q_id]).then(data => data[0])
 };
+// getAllQs: [CoreQuestion],
+
 console.log('after var rootDB: ');
 console.log(JSON.stringify(rootDB, null, 2)); //obj is empty atm
  
@@ -214,6 +272,8 @@ app.use(bodyParser.urlencoded({extended: true}))
 //shoudlnt this be calling/opening the db connetion?
 app.use('/graphql', graphqlHTTP({
     schema: questionSchema,
+    // [11jan22 swopped questionRoot with rootDB, but then nothing is returned at all in GQL!]
+    // rootValue: rootDB,
     rootValue: questionRoot,
     // Enable the GraphiQL UI
     graphiql: {
@@ -227,12 +287,20 @@ app.use('/graphql', graphqlHTTP({
     },
 }));
 
+// [query thata acctually works 11jan22]
+// query {
+//   getQuestionInfo (q_id: 6) {
+//     q_id
+//     question
+//     gp_order
+//   }
+// }
 
 // [orig line 565]
 // Database stuff t30march2021 - can call this by going to http://localhost:4004/
 // does db conn stuff need to be async??
 // Do i have to/am i suppposed to pass in req, resp when im calling thsi from the UI??
-// @7jan22 thsi db connection works w 4th query in gql console to return question w matchingn id
+// @7jan22 thsi db connection works w 4th query in gql console to return question w matchingn id - this is where db conn for whole system should eb created/establisehd 
 app.use((req, res, next) => {
     req.mysqlDb = mysql.createConnection({
         host: '127.0.0.1',
@@ -240,20 +308,25 @@ app.use((req, res, next) => {
         password: 'password',
         database: 'corelifedb'
     });
-    //error @7jan22 re this is nto a function 
+    // [added line 11jan22 - causes error .connect is not a function in node console, but GQL console does return data expected]
+    // req.mysqlDb.connect();
+    req.mysqlDb.connect;
+    //error @7jan22 re this is not a function 
     // req.mysqlDb.connect((err) => {
-    req.mysqlDb.query(queryGetBasicQuestions, args, (err, rows)=> {
-        if (err) {
-            console.log('Error connecting to DB: ' + err);
-            // console.log(err);
-            return; 
-        }
-        console.log('Connected to MySQL DB!');
-        });
-    console.log('Line after DB is connected...'); // does this line get logged before DB connection is made, cos im not doing async await?
+
+    	 // [11jan22 error about - cannot accesss 'queryGetBasicQuestions' before init, line 258, when i had removed number from GQL query but not replaced it with antoher still-valid number - but maybe this isnt needed here as it not in original tutorial]
+    // req.mysqlDb.query(queryGetBasicQuestions, args, (err, rows)=> {
+    //     if (err) {
+    //         console.log('Error connecting to DB: ' + err);
+    //         // console.log(err);
+    //         return; 
+    //     }
+    //     console.log('Connected to MySQL DB!');
+    //     });
+    // console.log('Line after DB is connected...'); // does this line get logged before DB connection is made, cos im not doing async await?
 
 
-    //maybe call sql queries from here??
+    //maybe call sql queries from here??  
     let queryGetBasicQuestions = `
     SELECT q_id, question, gp_order, points_type 
     FROM ref_core_questions
