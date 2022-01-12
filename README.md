@@ -39,3 +39,81 @@ query {
   }
 }
 ```
+
+### Fetch all Questions
+#### Query
+```
+query {
+  getAllQs {
+    q_id
+    question
+  }
+}
+
+```
+
+#### Response
+```
+{
+  "data": {
+    "getAllQs": [
+      {
+        "q_id": 1,
+        "question": "I have felt tense, anxious or nervous"
+      },
+      {
+        "q_id": 2,
+        "question": "I have felt I have someone to turn to for support when needed"
+      },
+      {
+        "q_id": 3,
+        "question": "I have felt ok about myself"
+      },
+      {
+        "q_id": 4,
+        "question": "I have felt able to cope when things go wrong"
+      },
+      {
+        "q_id": 5,
+        "question": "I have been troubled by aches, pains or other physical problems\t"
+      },
+      {
+        "q_id": 6,
+        "question": "I have been happy with the things I have done"
+      },
+      {
+        "q_id": 7,
+        "question": "I have had difficulty getting to sleep or staying asleep"
+      },
+      {
+        "q_id": 8,
+        "question": "I have felt warmth or affection for someone"
+      },
+      {
+        "q_id": 9,
+        "question": "I have been able to do most things I needed to"
+      },
+      {
+        "q_id": 10,
+        "question": "I have felt criticised by other people"
+      },
+      {
+        "q_id": 11,
+        "question": "I have felt unhappy"
+      },
+      {
+        "q_id": 12,
+        "question": "I have been irritable when with other people"
+      },
+      {
+        "q_id": 13,
+        "question": "I have felt optimistic about my future"
+      },
+      {
+        "q_id": 14,
+        "question": "I have achieved the things I wanted to"
+      }
+    ]
+  }
+}
+```
