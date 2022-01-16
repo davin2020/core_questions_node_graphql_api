@@ -6,11 +6,12 @@ var { buildSchema } = require('graphql');
 //VERY IMPORTANT, will not work if you use standard mysql package, MUST be promise based !
 const mysql = require('promise-mysql');
 
-//bodyParser not currently being used
-const bodyParser = require('body-parser');
+//bodyParser not currently being used, but will be
+// const bodyParser = require('body-parser');
 
-// 30march2021 this schmea no longer matches my db!
-// 16jan22 see this for alt syntax option, esp wrt Resolvers and SQL Queries - https://www.techiediaries.com/node-graphql-tutorial/
+// 16jan22 Try this for alt syntax option, esp wrt Resolvers and SQL Queries - https://www.techiediaries.com/node-graphql-tutorial/
+
+// FYI CoreQuestions object maps to table ref_core_questions and AnswerLabel object maps to reef_core_scale. Table ref_core_points has not yet been mapped to an object here
 var questionSchema = buildSchema(`
 	"All available queries"
 	type Query {
@@ -41,13 +42,10 @@ var questionSchema = buildSchema(`
 		scale_id: Int
 		"Label of the Answer"
 		label: String
-		"Points scored for choosing this answer"
-		points: Int
 	}
 `);
 
-
-// 16jan22 how to abstract the db connection so its not repeated twice?
+// 16jan22 ISSUE how to abstract/separate out the db connection so its not repeated twice?
 var getSingleQuestion = async (args, req, res) => {
 
     const connection55 = await mysql.createConnection({
@@ -61,16 +59,11 @@ var getSingleQuestion = async (args, req, res) => {
             queryGetQuestionByID, [args.q_id] );
 
     connection55.end();
-    // console.log('outside of tempResults::: ')
-    // console.log(tempResults); //'data' is undefined, so it [0]
-    // let temp = tempResults[0];
     console.log(tempResults[0]);
-    //no need to return nested array itself, as will result in null output ot GQL console, just need the first index
+    // Do not return whole array itself, as will result in null output in GQL console, but ok in node console, only return first index
     return tempResults[0];
 }
 
-
-// [NEW FUNCTION 11JAN22 ]
 var getAllQuestions = async (args, req, res) => {
 
     const connection77 = await mysql.createConnection({
@@ -84,43 +77,32 @@ var getAllQuestions = async (args, req, res) => {
             queryGetAllQuestions);
 
     connection77.end();
-    // console.log('outside of tempResults connection77::: ')
-    console.log(tempResults); //'data' is undefined, so it [0]
-    // console.log(tempResults._results);
+    console.log(tempResults); 
 
-    // let temp = tempResults[0];
-    // console.log(tempResults[0]);
-
-    // [11jan22 new, reutrning tempResuts works instead of returning tempResults[1]] -  if u return index 1 instead of whole thing u get GQL error -  "message": "Expected Iterable, but did not find one for field \"Query.allQuestions\".",
-    //no need to return nested array itself, just the first index
-    // need to return whole array here, if only return first index gets error - "message": "Expected Iterable, but did not find one for field \"Query.allQuestions\"."
+    // Musts return whole array here, if only return first index it gives GQL error - "message": "Expected Iterable, but did not find one for field \"Query.allQuestions\"."
     return tempResults;
 }
-
 
 let queryGetAllQuestions = `
     SELECT q_id, question, gp_order, points_type 
     FROM ref_core_questions
     `
 
-// The root provides a resolver function for each API endpoint
-//these keywords on left of : are like the endpoint and MUST correspond with the keywords within the const/var schema on line 6 'var schema = buildSchema', while on the right are the variables which contain the results/callbacks of functions eg 'var getCourse' on line 91 etc
+let queryGetQuestionByID = `
+SELECT q_id, question, gp_order, points_type from ref_core_questions WHERE q_id = ? ; `
+
+// The root provides a resolver function for each API endpoint - the keywords on left of : are like the endpoint and MUST correspond with the keywords within the 'var questionSchema = buildSchema' above, while on the right are the variables which contain the results/callbacks of functions that query the db
 const questionRoot = {
     allQuestions: getAllQuestions,
     singleQuestion: getSingleQuestion
 };
 
-
-let queryGetQuestionByID = `
-SELECT q_id, question, gp_order, points_type from ref_core_questions WHERE q_id = ? ; `
-
 var app = express();
 // app.use(bodyParser.json({type: 'application/json'}))
 // app.use(bodyParser.urlencoded({extended: true}))
 
-// Route for CoreQuestion stuff
+// Route with default queries already written in GQL console
 // FYI rootValue is the graphqlResolvers above
-//shoudlnt this be calling/opening the db connetion?
 app.use('/graphql', graphqlHTTP({
     // 16jan22 can require schema and rootValue from antoher file
     schema: questionSchema,
@@ -128,7 +110,7 @@ app.use('/graphql', graphqlHTTP({
     // Enable the GraphiQL UI - why are these not showing up?
     graphiql: {
         defaultQuery: "# query {\n" +
-            "#  singleQuestion (q_id: 1) {\n" +
+            "#  singleQuestion (q_id: 3) {\n" +
             "#    q_id\n" +
             "#    question\n" +
             "#    points_type\n" +
@@ -145,6 +127,7 @@ app.use('/graphql', graphqlHTTP({
             "}" 
     },
 }));
+// ISSUE shouldn't this above also be calling/opening the db connetion?
 
 app.listen(4009);
 console.log('Running a GraphQL API server at http://localhost:4009/graphql for Core Questions');
