@@ -117,3 +117,50 @@ query {
   }
 }
 ```
+
+<!-- Add extra db queries to Readme 
+allScaleLabels: getAllLabels,
+allQuestionsAndPoints: getAllQuestionsAndPoints
+
+-->
+### Fetch all Scale Labels
+#### Query
+```
+query {
+  allScaleLabels {
+    scale_id
+    label
+  }
+}
+
+```
+
+#### Response
+```
+{
+  "data": {
+    "allScaleLabels": [
+      {
+        "scale_id": 1,
+        "label": "Not at all"
+      },
+      {
+        "scale_id": 2,
+        "label": "Only occasionally"
+      },
+      {
+        "scale_id": 3,
+        "label": "Sometimes"
+      },
+      {
+        "scale_id": 4,
+        "label": "Often"
+      },
+      {
+        "scale_id": 5,
+        "label": "Most or All the time"
+      }
+    ]
+  }
+}
+```
