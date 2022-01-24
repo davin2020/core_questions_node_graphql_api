@@ -5,11 +5,10 @@ Built with Node.JS, Express, the [express-graphql](https://github.com/graphql/ex
 ## Install steps
 1) Firstly clone this repo locally
 2) Run `npm install` to install the project dependencies
-3) Run `node index.js` or `nodemon index.js` to start the application
+3) Create a new DB callled `core_questions_db` and run the SQL file `core_questions_db.sql` to create the schema and add some sample data
+4) Run `node index.js` or `nodemon index.js` to start the application
 
 You should then be able to access the GraphiQL UI by visting [http://localhost:4009/graphql](http://localhost:4009/graphql)
-
-<!--  change the anme of the local db ! -->
 
 ## Example Usage
 
@@ -118,11 +117,6 @@ query {
 }
 ```
 
-<!-- Add extra db queries to Readme 
-allScaleLabels: getAllLabels,
-allQuestionsAndPoints: getAllQuestionsAndPoints
-
--->
 ### Fetch all Scale Labels
 #### Query
 ```
@@ -159,6 +153,173 @@ query {
       {
         "scale_id": 5,
         "label": "Most or All the time"
+      }
+    ]
+  }
+}
+```
+
+### Fetch all Questions and the Number of Points for each Scale Label
+#### Query
+```
+query {
+  allQuestionsAndPoints {
+    q_id
+    question
+    points_type
+    pointsA_not
+    pointsB_only
+    pointsC_sometimes
+    pointsD_often
+    pointsE_most
+  }
+}
+```
+
+#### Response
+```
+{
+  "data": {
+    "allQuestionsAndPoints": [
+      {
+        "q_id": 1,
+        "question": "I have felt tense, anxious or nervous",
+        "points_type": 123,
+        "pointsA_not": 0,
+        "pointsB_only": 1,
+        "pointsC_sometimes": 2,
+        "pointsD_often": 3,
+        "pointsE_most": 4
+      },
+      {
+        "q_id": 2,
+        "question": "I have felt I have someone to turn to for support when needed",
+        "points_type": 321,
+        "pointsA_not": 4,
+        "pointsB_only": 3,
+        "pointsC_sometimes": 2,
+        "pointsD_often": 1,
+        "pointsE_most": 0
+      },
+      {
+        "q_id": 3,
+        "question": "I have felt ok about myself",
+        "points_type": 321,
+        "pointsA_not": 4,
+        "pointsB_only": 3,
+        "pointsC_sometimes": 2,
+        "pointsD_often": 1,
+        "pointsE_most": 0
+      },
+      {
+        "q_id": 4,
+        "question": "I have felt able to cope when things go wrong",
+        "points_type": 321,
+        "pointsA_not": 4,
+        "pointsB_only": 3,
+        "pointsC_sometimes": 2,
+        "pointsD_often": 1,
+        "pointsE_most": 0
+      },
+      {
+        "q_id": 5,
+        "question": "I have been troubled by aches, pains or other physical problems",
+        "points_type": 123,
+        "pointsA_not": 0,
+        "pointsB_only": 1,
+        "pointsC_sometimes": 2,
+        "pointsD_often": 3,
+        "pointsE_most": 4
+      },
+      {
+        "q_id": 6,
+        "question": "I have been happy with the things I have done",
+        "points_type": 321,
+        "pointsA_not": 4,
+        "pointsB_only": 3,
+        "pointsC_sometimes": 2,
+        "pointsD_often": 1,
+        "pointsE_most": 0
+      },
+      {
+        "q_id": 7,
+        "question": "I have had difficulty getting to sleep or staying asleep",
+        "points_type": 123,
+        "pointsA_not": 0,
+        "pointsB_only": 1,
+        "pointsC_sometimes": 2,
+        "pointsD_often": 3,
+        "pointsE_most": 4
+      },
+      {
+        "q_id": 8,
+        "question": "I have felt warmth or affection for someone",
+        "points_type": 321,
+        "pointsA_not": 4,
+        "pointsB_only": 3,
+        "pointsC_sometimes": 2,
+        "pointsD_often": 1,
+        "pointsE_most": 0
+      },
+      {
+        "q_id": 9,
+        "question": "I have been able to do most things I needed to",
+        "points_type": 321,
+        "pointsA_not": 4,
+        "pointsB_only": 3,
+        "pointsC_sometimes": 2,
+        "pointsD_often": 1,
+        "pointsE_most": 0
+      },
+      {
+        "q_id": 10,
+        "question": "I have felt criticised by other people",
+        "points_type": 123,
+        "pointsA_not": 0,
+        "pointsB_only": 1,
+        "pointsC_sometimes": 2,
+        "pointsD_often": 3,
+        "pointsE_most": 4
+      },
+      {
+        "q_id": 11,
+        "question": "I have felt unhappy",
+        "points_type": 123,
+        "pointsA_not": 0,
+        "pointsB_only": 1,
+        "pointsC_sometimes": 2,
+        "pointsD_often": 3,
+        "pointsE_most": 4
+      },
+      {
+        "q_id": 12,
+        "question": "I have been irritable when with other people",
+        "points_type": 123,
+        "pointsA_not": 0,
+        "pointsB_only": 1,
+        "pointsC_sometimes": 2,
+        "pointsD_often": 3,
+        "pointsE_most": 4
+      },
+      {
+        "q_id": 13,
+        "question": "I have felt optimistic about my future",
+        "points_type": 321,
+        "pointsA_not": 4,
+        "pointsB_only": 3,
+        "pointsC_sometimes": 2,
+        "pointsD_often": 1,
+        "pointsE_most": 0
+      },
+      {
+        "q_id": 14,
+        "question": "I have achieved the things I wanted to",
+        "points_type": 321,
+        "pointsA_not": 4,
+        "pointsB_only": 3,
+        "pointsC_sometimes": 2,
+        "pointsD_often": 1,
+        "pointsE_most": 0
       }
     ]
   }

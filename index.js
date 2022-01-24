@@ -174,7 +174,7 @@ var getAllLabels = async (args, req, res) => {
     //             ORDER BY rcq.gp_order;';
 
 
-//but ths wont return an array of ints for the label_points ! how to do that?
+//but ths wont return an array of ints for the label_points ! how to do that? - how to turn db record set into object w nested arrys for labels and points? what woudl structure of obj be like?
 let queryGetAllQuestionsAndPoints = `
     SELECT rcq.q_id, rcq.gp_order, rcq.question, rcq.points_type, rcp.pointsA_not, rcp.pointsB_only, rcp.pointsC_sometimes, rcp.pointsD_often, rcp.pointsE_most 
     FROM ref_core_questions AS rcq 
@@ -182,6 +182,7 @@ let queryGetAllQuestionsAndPoints = `
     ON rcq.points_type = rcp.points_id 
     ORDER BY rcq.gp_order;
     `
+    //subqueries in sql??
 
 var getAllQuestionsAndPoints = async (args, req, res) => {
     const connection77 = await mysql.createConnection({
