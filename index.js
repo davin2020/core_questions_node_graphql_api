@@ -67,26 +67,9 @@ var questionSchema = buildSchema(`
     }
 `);
 // 18jan22 re above fields, currently they have to match the column names as returned by the DB query - but how to translate db query record set into an object and pass back an array of objects, which may contains nested arrays? eg label_points: [Int]
-// PLUS how to add labels to above? Prob better to use objects ie create Question class in Node w methodds etc
-
-// 18jan22 GQL Tyypes
-// The GraphQL schema language supports the scalar types of String, Int, Float, Boolean, and ID, so you can use these directly in the schema you pass to buildSchema.
-
-// By default, every type is nullable - it's legitimate to return null as any of the scalar types. Use an exclamation point to indicate a type cannot be nullable, so String! is a non-nullable string.
-
-// To use a list type, surround the type in square brackets, so [Int] is a list of integers.
-
-// GQL objs can have methods too
-
-// Interfaces
-// Like many type systems, GraphQL supports interfaces. An Interface is an abstract type that includes a certain set of fields that a type must include to implement the interface.
-//  Union Types
-
-// https://graphql.org/learn/schema/
 
 
-
-// 16jan22 ISSUE how to abstract/separate out the db connection so its not repeated twice?
+// 16jan22 ISSUE how to abstract/separate out the db connection so its not repeated multiple times?
 var getSingleQuestion = async (args, req, res) => {
 
     const connection55 = await mysql.createConnection({
@@ -120,30 +103,26 @@ var getAllQuestions = async (args, req, res) => {
     connection77.end();
     console.log(tempResults); 
 
-    // Musts return whole array here, if only return first index it gives GQL error - "message": "Expected Iterable, but did not find one for field \"Query.allQuestions\"."
+    // Must return whole array here, if only return first index it gives GQL error - "message": "Expected Iterable, but did not find one for field \"Query.allQuestions\"."
     return tempResults;
 }
 
 let queryGetAllQuestions = `
     SELECT q_id, question, gp_order, points_type 
-    FROM ref_core_questions
+    FROM ref_core_questions ;
     `
 
 let queryGetQuestionByID = `
     SELECT q_id, question, gp_order, points_type 
     FROM ref_core_questions 
-    WHERE q_id = ? ; `
+    WHERE q_id = ? ;
+    `
 
 let queryGetAllLabels = `
     SELECT scale_id, label  
     FROM ref_core_scale
+    ORDER BY scale_id ;
     `
-
-
-// 18jan22 get all sccale labels
-
-    // $allQuestionLabels = $this->questionModel->getQuestionLabels();
-    // $query = $this->db->prepare('SELECT `scale_id`, `label` FROM `ref_core_scale` ORDER BY `scale_id`;');
 
 var getAllLabels = async (args, req, res) => {
 
@@ -160,29 +139,20 @@ var getAllLabels = async (args, req, res) => {
     // connection77.end();
     console.log(tempResults); 
 
-    // ? Must return whole array here, if only return first index it gives GQL error - "message": "Expected Iterable, but did not find one for field \"Query.allQuestions\"."
-    // tempResults[0] returns first item ok, but tempResults doesnt return whole array - as need to speciify that ARRAY in returned in BuildSchema above!
+    // Must return whole array here, if only return first index it gives GQL error - "message": "Expected Iterable, but did not find one for field \"Query.allScaleLabels\"."
+    // tempResults[0] returns first item ok, but tempResults doesnt return whole array - as I forgot to speciify that ARRAY in returned in buildSchema above!
     return tempResults;
 }
 
-    // PHP MVC APP
-    // questionModel->getQuestionsAndPoints();
-    // $queryGetQuestionPoints = 'SELECT rcq.q_id, rcq.gp_order, rcq.question, rcq.points_type, rcp.pointsA_not, rcp.pointsB_only, rcp.pointsC_sometimes, rcp.pointsD_often, rcp.pointsE_most 
-    //             FROM ref_core_questions AS rcq 
-    //             INNER JOIN ref_core_points AS rcp 
-    //             ON rcq.points_type = rcp.points_id 
-    //             ORDER BY rcq.gp_order;';
-
-
-//but ths wont return an array of ints for the label_points ! how to do that? - how to turn db record set into object w nested arrys for labels and points? what woudl structure of obj be like?
+//ISSUE but ths wont return an array of ints for the label_points ! how to do that? - how to turn db record set into object w nested arrys for labels and points? what woudl structure of obj be like?
 let queryGetAllQuestionsAndPoints = `
     SELECT rcq.q_id, rcq.gp_order, rcq.question, rcq.points_type, rcp.pointsA_not, rcp.pointsB_only, rcp.pointsC_sometimes, rcp.pointsD_often, rcp.pointsE_most 
     FROM ref_core_questions AS rcq 
     INNER JOIN ref_core_points AS rcp 
     ON rcq.points_type = rcp.points_id 
-    ORDER BY rcq.gp_order;
+    ORDER BY rcq.gp_order ;
     `
-    //subqueries in sql??
+    //CRAIG subqueries in sql or multiple queries ??
 
 var getAllQuestionsAndPoints = async (args, req, res) => {
     const connection77 = await mysql.createConnection({
@@ -198,11 +168,10 @@ var getAllQuestionsAndPoints = async (args, req, res) => {
     // connection77.end();
     console.log(tempResults); 
 
-    // ? Must return whole array here, if only return first index it gives GQL error - "message": "Expected Iterable, but did not find one for field \"Query.allQuestions\"."
-    // tempResults[0] returns first item ok, but tempResults doesnt return whole array - as need to speciify that ARRAY in returned in BuildSchema above!
+    // Must return whole array here, if only return first index it gives GQL error - "message": "Expected Iterable, but did not find one for field \"Query.allQuestionsAndPoints\"."
+    // tempResults[0] returns first item ok, but tempResults doesnt return whole array - as need to speciify that ARRAY in returned in buildSchema above!
     return tempResults;
 }
-
 
 
 // The root provides a resolver function for each API endpoint - the keywords on left of : are like the endpoint and MUST correspond with the keywords within the 'var questionSchema = buildSchema' above, while on the right are the variables which contain the results/callbacks of functions that query the db
@@ -218,12 +187,11 @@ var app = express();
 // app.use(bodyParser.urlencoded({extended: true}))
 
 // Route with default queries already written in GQL console
-// FYI rootValue is the graphqlResolvers above
+// FYI rootValue is the graphqlResolvers above - can require schema and rootValue from another file
 app.use('/graphql', graphqlHTTP({
-    // 16jan22 can require schema and rootValue from antoher file
     schema: questionSchema,
     rootValue: questionRoot,
-    // Enable the GraphiQL UI - why are these not showing up?
+    // Enable the GraphiQL UI -
     graphiql: {
         defaultQuery: "# query {\n" +
             "#  singleQuestion (q_id: 3) {\n" +
@@ -240,32 +208,28 @@ app.use('/graphql', graphqlHTTP({
             "    points_type\n" +
             "    gp_order\n" +
             "  }\n" +
+            "}\n\n" +
+            "# query {\n" +
+            "#  allScaleLabels {\n" +
+            "#    scale_id\n" +
+            "#    label\n" +
+            "#  }\n" +
+            "}\n\n" +
+            "query {\n" +
+            "  allQuestionsAndPoints {\n" +
+            "    q_id\n" +
+            "    question\n" +
+            "    points_type\n" +
+            "    pointsA_not\n" +
+            "    pointsB_only\n" +
+            "    pointsC_sometimes\n" +
+            "    pointsD_often\n" +
+            "    pointsD_often\n" +
+            "  }\n" +
             "}" 
     },
 }));
 // ISSUE shouldn't this above also be calling/opening the db connetion?
-
-// Additional Example Queries
-// query {
-//   allScaleLabels {
-//     scale_id
-//     label
-//   }
-// }
-
-// query {
-//   allQuestionsAndPoints {
-//     q_id
-//     question
-//     points_type
-//     pointsA_not
-//     pointsB_only
-//     pointsC_sometimes
-//     pointsD_often
-//     pointsE_most
-//   }
-// }
-
 
 app.listen(4009);
 console.log('Running a GraphQL API server at http://localhost:4009/graphql for Core Questions');
