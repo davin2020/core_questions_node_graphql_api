@@ -68,16 +68,17 @@ var questionSchema = buildSchema(`
 `);
 // 18jan22 re above fields, currently they have to match the column names as returned by the DB query - but how to translate db query record set into an object and pass back an array of objects, which may contains nested arrays? eg label_points: [Int]
 
-
-// 16jan22 ISSUE how to abstract/separate out the db connection so its not repeated multiple times?
-var getSingleQuestion = async (args, req, res) => {
-
-    const connection55 = await mysql.createConnection({
+//separated out db details for now
+const databaseDetails = {
         host: '127.0.0.1',
-        user: 'root',
+        user: 'user',
         password: 'password',
         database: 'core_questions_db'
-    }); 
+}
+
+var getSingleQuestion = async (args, req, res) => {
+
+    const connection55 = await mysql.createConnection(databaseDetails); 
 
     let tempResults = await connection55.query(
             queryGetQuestionByID, [args.q_id] );
@@ -90,12 +91,7 @@ var getSingleQuestion = async (args, req, res) => {
 
 var getAllQuestions = async (args, req, res) => {
 
-    const connection77 = await mysql.createConnection({
-        host: '127.0.0.1',
-        user: 'root',
-        password: 'password',
-        database: 'core_questions_db'
-    }); 
+    const connection77 = await mysql.createConnection(databaseDetails); 
 
     let tempResults = await connection77.query(
             queryGetAllQuestions);
@@ -126,12 +122,7 @@ let queryGetAllLabels = `
 
 var getAllLabels = async (args, req, res) => {
 
-    const connection77 = await mysql.createConnection({
-        host: '127.0.0.1',
-        user: 'root',
-        password: 'password',
-        database: 'core_questions_db'
-    }); 
+    const connection77 = await mysql.createConnection(databaseDetails); 
 
     let tempResults = await connection77.query(
             queryGetAllLabels);
@@ -155,12 +146,7 @@ let queryGetAllQuestionsAndPoints = `
     //CRAIG subqueries in sql or multiple queries ??
 
 var getAllQuestionsAndPoints = async (args, req, res) => {
-    const connection77 = await mysql.createConnection({
-        host: '127.0.0.1',
-        user: 'root',
-        password: 'password',
-        database: 'core_questions_db'
-    }); 
+    const connection77 = await mysql.createConnection(databaseDetails); 
 
     let tempResults = await connection77.query(
             queryGetAllQuestionsAndPoints);
