@@ -21,9 +21,9 @@ var questionSchema = buildSchema(`
 		allQuestions: [CoreQuestion]
 		"Fetch a single CoreQuestion by ID and see Info"
 		singleQuestion(q_id: Int!): CoreQuestion
-        "Fetch a list of all scale labels from table ref_core_scale"
-        allScaleLabels: [ScaleLabel]
-        allQuestionsAndPoints: [CoreQuestionPoints]
+        	"Fetch a list of all scale labels from table ref_core_scale"
+        	allScaleLabels: [ScaleLabel]
+        	allQuestionsAndPoints: [CoreQuestionPoints]
 	}
 	"All available mutations"
 	type Mutation {
@@ -48,23 +48,23 @@ var questionSchema = buildSchema(`
 		"Label of the Scale eg Often or Sometimes etc"
 		label: String
 	}
-    "A CoreQuestionPoints object"
-    type CoreQuestionPoints {
-        "CoreQuestion ID"
-        q_id: Int
-        "Order of questions on GP Core form"
-        gp_order: Int
-        "The actual question"
-        question: String
-        "The type of points, either ascending 123 or descending 321"
-        points_type: Int
-        "Points for each Answer Label, array of ints"
-        pointsA_not: Int
-        pointsB_only: Int
-        pointsC_sometimes: Int
-        pointsD_often: Int
-        pointsE_most: Int
-    }
+    	"A CoreQuestionPoints object"
+    	type CoreQuestionPoints {
+		"CoreQuestion ID"
+		q_id: Int
+		"Order of questions on GP Core form"
+		gp_order: Int
+		"The actual question"
+		question: String
+		"The type of points, either ascending 123 or descending 321"
+		points_type: Int
+		"Points for each Answer Label, array of ints"
+		pointsA_not: Int
+		pointsB_only: Int
+		pointsC_sometimes: Int
+		pointsD_often: Int
+		pointsE_most: Int
+    	}
 `);
 // 18jan22 re above fields, currently they have to match the column names as returned by the DB query - but how to translate db query record set into an object and pass back an array of objects, which may contains nested arrays? eg label_points: [Int]
 
